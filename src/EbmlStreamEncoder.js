@@ -53,7 +53,7 @@ export default class EbmlStreamEncoder {
     if (this.openTags.length > 0) {
       this.openTags[this.openTags.length - 1].Children.push(tag)
     } else {
-      this.constructBuffer(tag.encode())
+      return this.constructBuffer(tag.encode())
     }
   }
 
@@ -70,7 +70,7 @@ export default class EbmlStreamEncoder {
       throw new Error(`Logic error - closing tag "${EbmlTagId[tag.id]}" is not expected tag "${EbmlTagId[inMemoryTag.id]}"`)
     }
     if (this.openTags.length < 1) {
-      this.constructBuffer(inMemoryTag.encode())
+      return this.constructBuffer(inMemoryTag.encode())
     }
   }
 }

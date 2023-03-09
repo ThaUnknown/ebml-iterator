@@ -1,10 +1,10 @@
 /* global describe, it, beforeAll, beforeEach */
 import assert from 'assert'
-import { EbmlStreamEncoder } from '../src/EbmlStreamEncoder'
+import EbmlStreamEncoder from '../src/EbmlStreamEncoder.js'
 import 'jasmine'
-import { EbmlTagId } from '../src/models/enums/EbmlTagId'
-import { EbmlTagPosition } from '../src/models/enums/EbmlTagPosition'
-import { EbmlTagFactory } from '../src/models/EbmlTagFactory'
+import EbmlTagId from '../src/models/enums/EbmlTagId.js'
+import EbmlTagPosition from '../src/models/enums/EbmlTagPosition.js'
+import EbmlTagFactory from '../src/models/EbmlTagFactory.js'
 
 const invalidTag = {
   id: undefined,
@@ -38,34 +38,29 @@ const ebmlVersion0Tag = Object.assign(EbmlTagFactory.create(EbmlTagId.EBMLVersio
 
 describe('EBML', () => {
   describe('Encoder', () => {
-    function createEncoder (expected, done) {
+    function createEncoder (expected, done, data) {
       const encoder = new EbmlStreamEncoder()
-      encoder.on('data', chunk => {
-        assert.strictEqual(
-          chunk.toString('hex'),
-          Buffer.from(expected).toString('hex')
-        )
-        encoder.on('finish', done)
-        done()
-      })
-      encoder.on('finish', done)
-      return encoder
+      for (const item of data) {
+        const chunk = encoder.processTag(item)
+        if (chunk) {
+          assert.strictEqual(
+            chunk.toString('hex'),
+            Buffer.from(expected).toString('hex')
+          )
+          done()
+        }
+      }
     }
 
     it('should write a single tag', done => {
-      const encoder = createEncoder([0x42, 0x86, 0x81, 0x01], done)
-      encoder.write(ebmlVersion1Tag)
-      encoder.end()
+      createEncoder([0x42, 0x86, 0x81, 0x01], done, [ebmlVersion1Tag])
     })
     it('should write a tag with a single child', done => {
-      const encoder = createEncoder(
+      createEncoder(
         [0x1a, 0x45, 0xdf, 0xa3, 0x84, 0x42, 0x86, 0x81, 0x00],
-        done
+        done,
+        [ebmlStartTag, ebmlVersion0Tag, ebmlEndTag]
       )
-      encoder.write(ebmlStartTag)
-      encoder.write(ebmlVersion0Tag)
-      encoder.write(ebmlEndTag)
-      encoder.end()
     })
     describe('#writeTag', () => {
       let encoder
@@ -73,13 +68,13 @@ describe('EBML', () => {
         encoder = new EbmlStreamEncoder()
       })
       it('does nothing with incomplete tag data', () => {
-        encoder.write(incompleteTag)
-        assert.strictEqual(encoder.stack.length, 0)
+        encoder.processTag(incompleteTag)
+        assert.strictEqual(encoder.openTags.length, 0)
       })
       it('throws with an invalid tag id', () => {
         assert.throws(
           () => {
-            encoder.write(invalidTag)
+            encoder.processTag(invalidTag)
           },
           /No id found/,
           'Not throwing properly'
@@ -94,7 +89,7 @@ describe('EBML', () => {
       it('throws with an invalid tag id', () => {
         assert.throws(
           () => {
-            encoder.write(invalidTag)
+            encoder.processTag(invalidTag)
           },
           /No id found/,
           'Not throwing properly'
@@ -104,25 +99,25 @@ describe('EBML', () => {
     describe('#_transform', () => {
       it('should do nothing on an incomplete tag', () => {
         const encoder = new EbmlStreamEncoder()
-        encoder.write(incompleteTag)
-        assert.ok(encoder.buffer == null || encoder.buffer.length === 0)
+        encoder.processTag(incompleteTag)
+        assert.ok(encoder.dataBuffer == null || encoder.dataBuffer.length === 0)
       })
     })
-    describe('#_bufferAndFlush', () => {
+    describe('#constructBuffer', () => {
       let encoder
       beforeEach(() => {
         encoder = new EbmlStreamEncoder()
       })
       it('should create a new buffer (but still be empty after eval) with an empty buffer', () => {
-        assert.ok(encoder.buffer == null || encoder.buffer.length === 0)
-        encoder._bufferAndFlush(Buffer.from([0x42, 0x86, 0x81, 0x01]))
-        assert.ok(encoder.buffer == null || encoder.buffer.length === 0)
+        assert.ok(encoder.dataBuffer == null || encoder.dataBuffer.length === 0)
+        encoder.constructBuffer(Buffer.from([0x42, 0x86, 0x81, 0x01]))
+        assert.ok(encoder.dataBuffer == null || encoder.dataBuffer.length === 0)
       })
       it('should append to the buffer (and empty after eval) with an existing buffer', () => {
         encoder.buffer = Buffer.from([0x42, 0x86, 0x81, 0x01])
-        assert.ok(encoder.buffer instanceof Buffer)
-        encoder._bufferAndFlush(Buffer.from([0x42, 0x86, 0x81, 0x01]))
-        assert.ok(encoder.buffer == null || encoder.buffer.length === 0)
+        assert.ok(encoder.dataBuffer instanceof Buffer)
+        encoder.constructBuffer(Buffer.from([0x42, 0x86, 0x81, 0x01]))
+        assert.ok(encoder.dataBuffer == null || encoder.dataBuffer.length === 0)
       })
     })
   })
