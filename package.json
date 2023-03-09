@@ -1,0 +1,17 @@
+{
+  "name": "ebml-iterator",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine test/decoder.spec.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "assert": "^2.0.0",
+    "jasmine": "^4.5.0"
+  }
+}
