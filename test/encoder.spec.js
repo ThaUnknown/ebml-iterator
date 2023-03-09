@@ -1,6 +1,6 @@
-/* global describe, it, beforeAll, beforeEach */
+/* global describe, it, beforeAll */
 import assert from 'assert'
-import EbmlStreamEncoder from '../src/EbmlStreamEncoder.js'
+import EbmlIteratorEncoder from '../src/EbmlIteratorEncoder.js'
 import 'jasmine'
 import EbmlTagId from '../src/models/enums/EbmlTagId.js'
 import EbmlTagPosition from '../src/models/enums/EbmlTagPosition.js'
@@ -39,7 +39,7 @@ const ebmlVersion0Tag = Object.assign(EbmlTagFactory.create(EbmlTagId.EBMLVersio
 describe('EBML', () => {
   describe('Encoder', () => {
     function createEncoder (expected, done, data) {
-      const encoder = new EbmlStreamEncoder()
+      const encoder = new EbmlIteratorEncoder()
       for (const item of data) {
         const chunk = encoder.processTag(item)
         if (chunk) {
@@ -65,7 +65,7 @@ describe('EBML', () => {
     describe('#writeTag', () => {
       let encoder
       beforeAll(() => {
-        encoder = new EbmlStreamEncoder()
+        encoder = new EbmlIteratorEncoder()
       })
       it('does nothing with incomplete tag data', () => {
         encoder.processTag(incompleteTag)
@@ -84,7 +84,7 @@ describe('EBML', () => {
     describe('#startTag', () => {
       let encoder
       beforeAll(() => {
-        encoder = new EbmlStreamEncoder()
+        encoder = new EbmlIteratorEncoder()
       })
       it('throws with an invalid tag id', () => {
         assert.throws(
@@ -94,30 +94,6 @@ describe('EBML', () => {
           /No id found/,
           'Not throwing properly'
         )
-      })
-    })
-    describe('#_transform', () => {
-      it('should do nothing on an incomplete tag', () => {
-        const encoder = new EbmlStreamEncoder()
-        encoder.processTag(incompleteTag)
-        assert.ok(encoder.dataBuffer == null || encoder.dataBuffer.length === 0)
-      })
-    })
-    describe('#constructBuffer', () => {
-      let encoder
-      beforeEach(() => {
-        encoder = new EbmlStreamEncoder()
-      })
-      it('should create a new buffer (but still be empty after eval) with an empty buffer', () => {
-        assert.ok(encoder.dataBuffer == null || encoder.dataBuffer.length === 0)
-        encoder.constructBuffer(Buffer.from([0x42, 0x86, 0x81, 0x01]))
-        assert.ok(encoder.dataBuffer == null || encoder.dataBuffer.length === 0)
-      })
-      it('should append to the buffer (and empty after eval) with an existing buffer', () => {
-        encoder.buffer = Buffer.from([0x42, 0x86, 0x81, 0x01])
-        assert.ok(encoder.dataBuffer instanceof Buffer)
-        encoder.constructBuffer(Buffer.from([0x42, 0x86, 0x81, 0x01]))
-        assert.ok(encoder.dataBuffer == null || encoder.dataBuffer.length === 0)
       })
     })
   })

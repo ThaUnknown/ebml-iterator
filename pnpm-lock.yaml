@@ -2,10 +2,12 @@ lockfileVersion: 5.4
 
 specifiers:
   assert: ^2.0.0
+  ebml-stream: ^1.0.3
   jasmine: ^4.5.0
 
 devDependencies:
   assert: 2.0.0
+  ebml-stream: 1.0.3
   jasmine: 4.5.0
 
 packages:
@@ -52,6 +54,11 @@ packages:
     dependencies:
       has-property-descriptors: 1.0.0
       object-keys: 1.1.1
+    dev: true
+
+  /ebml-stream/1.0.3:
+    resolution: {integrity: sha512-A+jCBY5NNAH/CQlcjLWN9txgv3uNiz+UAmMqDHPxFxoMNnuerV0RLhkE0YI9aNhdS3JVfcEQ9jFWq39fAR2W5g==}
+    engines: {node: '>= 10.10.0'}
     dev: true
 
   /es6-object-assign/1.1.0:

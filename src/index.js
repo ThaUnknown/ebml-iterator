@@ -1,6 +1,6 @@
 export { default as Tools } from './tools.js'
-export { default as EbmlStreamDecoder } from './EbmlStreamDecoder.js'
-export { default as EbmlStreamEncoder } from './EbmlStreamEncoder.js'
+export { default as EbmlIteratorDecoder } from './EbmlIteratorDecoder.js'
+export { default as EbmlIteratorEncoder } from './EbmlIteratorEncoder.js'
 export { default as Block } from './models/tags/Block.js'
 export { default as BlockLacing } from './models/enums/BlockLacing.js'
 export { default as EbmlDataTag } from './models/tags/EbmlDataTag.js'

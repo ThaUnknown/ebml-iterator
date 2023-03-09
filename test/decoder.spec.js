@@ -1,6 +1,6 @@
 /* global describe, it */
 import assert from 'assert'
-import EbmlStreamDecoder from '../src/EbmlStreamDecoder.js'
+import EbmlIteratorDecoder from '../src/EbmlIteratorDecoder.js'
 import 'jasmine'
 import EbmlTagPosition from '../src/models/enums/EbmlTagPosition.js'
 import EbmlElementType from '../src/models/enums/EbmlElementType.js'
@@ -54,7 +54,7 @@ describe('EBML', () => {
       async function * stream () {
         yield Buffer.from([0x42, 0x86, 0x81, 0x01])
       }
-      const decoder = new EbmlStreamDecoder({ stream: stream() })
+      const decoder = new EbmlIteratorDecoder({ stream: stream() })
 
       for await (const tag of decoder) {
         assert.strictEqual(tag.position, EbmlTagPosition.Content)
@@ -71,7 +71,7 @@ describe('EBML', () => {
         yield Buffer.from([0x1a, 0x45, 0xdf, 0xa3, 0x80])
       }
 
-      const decoder = new EbmlStreamDecoder()
+      const decoder = new EbmlIteratorDecoder()
 
       for await (const tag of decoder[Symbol.asyncIterator](data())) {
         assert.strictEqual(tag.position, EbmlTagPosition.Start)
@@ -88,7 +88,7 @@ describe('EBML', () => {
         yield Buffer.from([0x1a, 0x45, 0xdf, 0xa3])
         yield Buffer.from([0x84, 0x42, 0x86, 0x81, 0x00])
       }
-      const decoder = new EbmlStreamDecoder({ stream: stream() })
+      const decoder = new EbmlIteratorDecoder({ stream: stream() })
       let tags = 0
       for await (const tag of decoder) {
         if (tag.position === EbmlTagPosition.End) {
