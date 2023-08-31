@@ -44,7 +44,7 @@ describe('EBML', () => {
         const chunk = encoder.processTag(item)
         if (chunk) {
           assert.strictEqual(
-            chunk.toString('hex'),
+            Buffer.from(chunk).toString('hex'),
             Buffer.from(expected).toString('hex')
           )
           done()

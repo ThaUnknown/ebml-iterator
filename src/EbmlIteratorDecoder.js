@@ -1,3 +1,5 @@
+import { concat } from 'uint8-util'
+
 import Tools from './tools.js'
 import EbmlElementType from './models/enums/EbmlElementType.js'
 import EbmlTagPosition from './models/enums/EbmlTagPosition.js'
@@ -8,7 +10,7 @@ export default class EbmlIteratorDecoder {
     this._stream = options.stream
     this._currentBufferOffset = 0
     this._tagStack = []
-    this._buffer = Buffer.alloc(0)
+    this._buffer = new Uint8Array()
     this._bufferTagIds = []
     this._bufferTagIds = options.bufferTagIds || []
   }
@@ -24,7 +26,7 @@ export default class EbmlIteratorDecoder {
   }
 
   * parseTags (chunk) {
-    this._buffer = Buffer.concat([this._buffer, Buffer.from(chunk)])
+    this._buffer = concat([this._buffer, chunk])
     while (true) {
       const currentTag = this.readTagHeader(this._buffer)
       if (!currentTag) {
@@ -79,6 +81,8 @@ export default class EbmlIteratorDecoder {
 
   createTag (tag, position, data) {
     const emittedTag = EbmlTagFactory.create(tag.id)
+    emittedTag.absoluteStart = tag.absoluteStart
+    emittedTag.tagHeaderLength = tag.tagHeaderLength
     emittedTag.size = tag.size
     emittedTag.position = position
     if (position === EbmlTagPosition.Content) {

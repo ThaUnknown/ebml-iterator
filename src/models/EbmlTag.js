@@ -1,3 +1,5 @@
+import { hex2arr, concat } from 'uint8-util'
+
 import EbmlTagId from './enums/EbmlTagId.js'
 import Tools from '../tools.js'
 
@@ -13,14 +15,14 @@ export default class EbmlTag {
     if (tagHex.length % 2 !== 0) {
       tagHex = `0${tagHex}`
     }
-    return Buffer.from(tagHex, 'hex')
+    return hex2arr(tagHex)
   }
 
   encode () {
     let vintSize = null
     const content = this.encodeContent()
     if (this.size === -1) {
-      vintSize = Buffer.from('01ffffffffffffff', 'hex')
+      vintSize = hex2arr('01ffffffffffffff')
     } else {
       let specialLength
       if ([
@@ -31,7 +33,7 @@ export default class EbmlTag {
       }
       vintSize = Tools.writeVint(content.length, specialLength)
     }
-    return Buffer.concat([
+    return concat([
       this.getTagDeclaration(),
       vintSize,
       content

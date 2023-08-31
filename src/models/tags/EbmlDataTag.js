@@ -3,6 +3,8 @@ import EbmlElementType from '../enums/EbmlElementType.js'
 import Tools from '../../tools.js'
 import EbmlTagPosition from '../enums/EbmlTagPosition.js'
 
+import { text2arr } from 'uint8-util'
+
 export default class EbmlDataTag extends EbmlTag {
   constructor (id, type) {
     super(id, type, EbmlTagPosition.Content)
@@ -40,9 +42,9 @@ export default class EbmlDataTag extends EbmlTag {
       case EbmlElementType.Integer:
         return Tools.writeSigned(this.data)
       case EbmlElementType.String:
-        return Buffer.from(this.data, 'ascii')
+        return text2arr(this.data)
       case EbmlElementType.UTF8:
-        return Buffer.from(this.data, 'utf8')
+        return text2arr(this.data)
       case EbmlElementType.Binary:
       default:
         return this.data

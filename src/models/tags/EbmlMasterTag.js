@@ -1,3 +1,5 @@
+import { concat } from 'uint8-util'
+
 import EbmlTag from '../EbmlTag.js'
 import EbmlElementType from '../enums/EbmlElementType.js'
 import EbmlTagPosition from '../enums/EbmlTagPosition.js'
@@ -19,7 +21,7 @@ export default class EbmlMasterTag extends EbmlTag {
   }
 
   encodeContent () {
-    return Buffer.concat(this._children.map(child => child.encode()))
+    return concat(this._children.map(child => child.encode()))
   }
 
   parseContent (content) {
