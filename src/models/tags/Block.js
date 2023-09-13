@@ -24,19 +24,19 @@ export default class Block extends EbmlDataTag {
   writeFlagsBuffer () {
     let flags = 0x00
     if (this.invisible) {
-      flags |= 0x10
+      flags |= 0b1000
     }
     switch (this.lacing) {
       case BlockLacing.None:
         break
       case BlockLacing.Xiph:
-        flags |= 0x04
+        flags |= 0b0010
         break
       case BlockLacing.EBML:
-        flags |= 0x08
+        flags |= 0b0110
         break
       case BlockLacing.FixedSize:
-        flags |= 0x0c
+        flags |= 0b0100
         break
     }
     return new Uint8Array([flags % 256])
@@ -54,20 +54,20 @@ export default class Block extends EbmlDataTag {
   parseContent (data) {
     const track = Tools.readVint(data)
     this.track = track.value
-    this.value = Tools.readSigned(data.subarray(track.length, track.length + 2))
+    this.value = Tools.readSigned(data.slice(track.length, track.length + 2))
     const flags = data[track.length + 2]
-    this.invisible = Boolean(flags & 0x10)
-    switch (flags & 0x0c) {
-      case 0x00:
+    this.invisible = Boolean(flags & 0b1000)
+    switch (flags & 0b0110) {
+      case 0b0000:
         this.lacing = BlockLacing.None
         break
-      case 0x04:
+      case 0b0010:
         this.lacing = BlockLacing.Xiph
         break
-      case 0x08:
+      case 0b0110:
         this.lacing = BlockLacing.EBML
         break
-      case 0x0c:
+      case 0b0100:
         this.lacing = BlockLacing.FixedSize
         break
     }
