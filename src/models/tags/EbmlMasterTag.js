@@ -31,6 +31,7 @@ export default class EbmlMasterTag extends EbmlTag {
       const tagIdHex = Tools.readHexString(content, 0, tag.length)
       const tagId = Number.parseInt(tagIdHex, 16)
       const tagObject = EbmlTagFactory.create(tagId)
+      tagObject.sizeLength = size.length
       tagObject.size = size.value
       const totalTagLength = tag.length + size.length + size.value
       tagObject.parseContent(content.slice(tag.length + size.length, totalTagLength))

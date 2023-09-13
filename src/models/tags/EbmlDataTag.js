@@ -38,9 +38,9 @@ export default class EbmlDataTag extends EbmlTag {
       case EbmlElementType.UnsignedInt:
         return Tools.writeUnsigned(this.data)
       case EbmlElementType.Float:
-        return Tools.writeFloat(this.data)
+        return Tools.writeFloat(this.data, this.size)
       case EbmlElementType.Integer:
-        return Tools.writeSigned(this.data)
+        return Tools.writeSigned(this.data, this.size)
       case EbmlElementType.String:
         return text2arr(this.data)
       case EbmlElementType.UTF8:

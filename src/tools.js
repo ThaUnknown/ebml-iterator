@@ -122,8 +122,16 @@ export default class Tools {
     }
   }
 
-  static writeSigned (num) {
-    return new Int32Array([num])
+  static writeSigned (num, len) {
+    switch (len) {
+      case 1:
+        return new Int8Array([num])
+      case 2:
+        return new Int16Array([num])
+      case 4:
+      default:
+        return new Int32Array([num])
+    }
   }
 
   static readFloat (buff) {

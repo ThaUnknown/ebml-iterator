@@ -73,6 +73,7 @@ export default class EbmlIteratorDecoder {
     const tagId = Number.parseInt(tagIdHex, 16)
     const tagObject = EbmlTagFactory.create(tagId)
     tagObject.size = size.value
+    tagObject.sizeLength = size.length
     return Object.assign(tagObject, {
       absoluteStart: this._currentBufferOffset + offset,
       tagHeaderLength: tag.length + size.length
@@ -84,6 +85,7 @@ export default class EbmlIteratorDecoder {
     emittedTag.absoluteStart = tag.absoluteStart
     emittedTag.tagHeaderLength = tag.tagHeaderLength
     emittedTag.size = tag.size
+    emittedTag.sizeLength = tag.sizeLength
     emittedTag.position = position
     if (position === EbmlTagPosition.Content) {
       emittedTag.parseContent(data)

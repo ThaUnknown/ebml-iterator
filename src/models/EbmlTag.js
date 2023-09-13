@@ -1,6 +1,5 @@
 import { hex2arr, concat } from 'uint8-util'
 
-import EbmlTagId from './enums/EbmlTagId.js'
 import Tools from '../tools.js'
 
 export default class EbmlTag {
@@ -24,14 +23,7 @@ export default class EbmlTag {
     if (this.size === -1) {
       vintSize = hex2arr('01ffffffffffffff')
     } else {
-      let specialLength
-      if ([
-        EbmlTagId.Segment,
-        EbmlTagId.Cluster
-      ].some(i => i === this.id)) {
-        specialLength = 8
-      }
-      vintSize = Tools.writeVint(content.length, specialLength)
+      vintSize = Tools.writeVint(content.length, this.sizeLength)
     }
     return concat([
       this.getTagDeclaration(),
