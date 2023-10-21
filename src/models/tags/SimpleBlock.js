@@ -1,5 +1,3 @@
-import { concat } from 'uint8-util'
-
 import Tools from '../../tools.js'
 import Block from './Block.js'
 import EbmlTagId from '../enums/EbmlTagId.js'
@@ -17,7 +15,7 @@ export default class SimpleBlock extends Block {
     if (this.discardable) {
       flags[0] |= 0x01
     }
-    return concat([
+    return Buffer.concat([
       this.writeTrackBuffer(),
       this.writeValueBuffer(),
       flags,

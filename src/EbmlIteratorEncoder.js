@@ -4,10 +4,11 @@ import EbmlTagId from './models/enums/EbmlTagId.js'
 export default class EbmlIteratorEncoder {
   constructor ({ stream } = {}) {
     this._stream = stream
+    this.buffer = Buffer.alloc(0)
     this.openTags = []
   }
 
-  async * [Symbol.asyncIterator] (stream = this._stream) {
+  async * [Symbol.asyncIterator] (stream) {
     for await (const tag of stream) {
       const chunk = this.processTag(tag)
       if (chunk) yield chunk
@@ -30,11 +31,20 @@ export default class EbmlIteratorEncoder {
     }
   }
 
+  constructBuffer (buffer) {
+    this.buffer = Buffer.concat([this.buffer, buffer])
+    if (this.buffer.length > 0) {
+      const chunk = Buffer.from(this.buffer)
+      this.buffer = Buffer.alloc(0)
+      return chunk
+    }
+  }
+
   writeTag (tag) {
     if (this.openTags.length > 0) {
       this.openTags[this.openTags.length - 1].Children.push(tag)
     } else {
-      return tag.encode()
+      return this.constructBuffer(tag.encode())
     }
   }
 
@@ -51,7 +61,7 @@ export default class EbmlIteratorEncoder {
       throw new Error(`Logic error - closing tag "${EbmlTagId[tag.id]}" is not expected tag "${EbmlTagId[inMemoryTag.id]}"`)
     }
     if (this.openTags.length < 1) {
-      return inMemoryTag.encode()
+      return this.constructBuffer(inMemoryTag.encode())
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "ebml-iterator",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "type": "module",
   "main": "src/index.js",
@@ -18,8 +18,5 @@
     "assert": "^2.0.0",
     "ebml-stream": "^1.0.3",
     "jasmine": "^4.5.0"
-  },
-  "dependencies": {
-    "uint8-util": "^2.2.3"
   }
 }

@@ -1,6 +1,5 @@
 export default class Tools {
-  static readVint (arrayBuffer, start = 0) {
-    const buffer = new Uint8Array(arrayBuffer)
+  static readVint (buffer, start = 0) {
     const length = 8 - Math.floor(Math.log2(buffer[start]))
     if (length > 8) {
       if (length === Infinity) throw new Error(`Unrepresentable length: ${length}`)
@@ -18,10 +17,10 @@ export default class Tools {
     }
     let value = buffer[start] & ((1 << (8 - length)) - 1)
     for (let i = 1; i < length; i += 1) {
-      value *= 2 ** 8
+      value *= Math.pow(2, 8)
       value += buffer[start + i]
     }
-    if (value === 2 ** (length * 7) - 1) {
+    if (value === (Math.pow(2, (length * 7)) - 1)) {
       value = -1
     }
     return {
@@ -31,24 +30,24 @@ export default class Tools {
   }
 
   static writeVint (value, desiredLength) {
-    if (value < 0 || value > 2 ** 53) {
+    if (value < 0 || value > (Math.pow(2, 53))) {
       throw new Error(`Unrepresentable value: ${value}`)
     }
     let length = desiredLength
     if (!length) {
       for (length = 1; length <= 8; length += 1) {
-        if (value < 2 ** (7 * length) - 1) {
+        if (value < Math.pow(2, (7 * length)) - 1) {
           break
         }
       }
     }
-    const buffer = new Uint8Array(length)
+    const buffer = Buffer.alloc(length)
     let val = value
     for (let i = 1; i <= length; i += 1) {
       const b = val & 0xff
       buffer[length - i] = b
       val -= b
-      val /= 2 ** 8
+      val /= Math.pow(2, 8)
     }
     buffer[0] |= 1 << (8 - length)
     return buffer
@@ -64,28 +63,34 @@ export default class Tools {
     return val
   }
 
-  static readHexString (buf, start = 0, end = buf.byteLength) {
-    return Array.from(new Uint8Array(buf).subarray(start, end))
+  static readHexString (buff, start = 0, end = buff.byteLength) {
+    return Array.from(buff.subarray(start, end))
       .map(q => Number(q).toString(16))
       .reduce((acc, current) => `${acc}${this.padStart(current)}`, '')
   }
 
   static readUtf8 (buff) {
     try {
-      const decoder = new TextDecoder('utf-8')
-      return decoder.decode(buff)
+      return Buffer.from(buff).toString('utf8')
     } catch (exception) {
       return null
     }
   }
 
   static readUnsigned (buff) {
-    const view = new DataView(buff.buffer, 0, buff.byteLength)
-    if (buff.byteLength === 1) { view.getUint8(0) }
-    if (buff.byteLength === 2) { view.getUint16(0) }
-    if (buff.byteLength === 4) { view.getUint32(0) }
+    const b = new DataView(buff.buffer, buff.byteOffset, buff.byteLength)
+    switch (buff.byteLength) {
+      case 1:
+        return b.getUint8(0)
+      case 2:
+        return b.getUint16(0)
+      case 4:
+        return b.getUint32(0)
+      default:
+        break
+    }
     if (buff.byteLength <= 6) {
-      return new Uint8Array(buff).reduce((acc, current) => acc * 256 + current, 0)
+      return buff.reduce((acc, current) => acc * 256 + current, 0)
     }
     const hex = Tools.readHexString(buff, 0, buff.byteLength)
     const num = parseInt(hex, 16)
@@ -97,19 +102,22 @@ export default class Tools {
 
   static writeUnsigned (num) {
     if (typeof num === 'string') {
-      return new Uint8Array(num.match(/[\da-f]{2}/gi).map((h) => parseInt(h, 16)))
+      return Buffer.from(num, 'hex')
+    } else {
+      const buf = Buffer.alloc(6)
+      buf.fill(0)
+      buf.writeUIntBE(num, 0, 6)
+      let firstValueIndex = buf.findIndex(b => b !== 0)
+      if (firstValueIndex === -1) {
+        firstValueIndex = buf.length - 1
+      }
+      const ret = buf.slice(firstValueIndex)
+      return ret
     }
-    const view = new DataView(new ArrayBuffer(8))
-    view.setBigUint64(0, BigInt(num))
-    let firstValueIndex = 0
-    while (firstValueIndex < 7 && view.getUint8(firstValueIndex) === 0) {
-      firstValueIndex++
-    }
-    return new Uint8Array(view.buffer.slice(firstValueIndex))
   }
 
   static readSigned (buff) {
-    const b = new DataView(buff.buffer, 0, buff.byteLength)
+    const b = new DataView(buff.buffer, buff.byteOffset, buff.byteLength)
     switch (buff.byteLength) {
       case 1:
         return b.getInt8(0)
@@ -122,20 +130,14 @@ export default class Tools {
     }
   }
 
-  static writeSigned (num, len) {
-    switch (len) {
-      case 1:
-        return new Int8Array([num])
-      case 2:
-        return new Int16Array([num])
-      case 4:
-      default:
-        return new Int32Array([num])
-    }
+  static writeSigned (num) {
+    const buf = Buffer.alloc(8)
+    buf.writeInt32BE(num, 0)
+    return buf
   }
 
   static readFloat (buff) {
-    const b = new DataView(buff.buffer, 0, buff.byteLength)
+    const b = new DataView(buff.buffer, buff.byteOffset, buff.byteLength)
     switch (buff.byteLength) {
       case 4:
         return b.getFloat32(0)
@@ -147,6 +149,11 @@ export default class Tools {
   }
 
   static writeFloat (num) {
-    return new Float32Array([num])
+    let buf = Buffer.alloc(8)
+    const written = buf.writeFloatBE(num, 0)
+    if (written <= 4) {
+      buf = buf.slice(0, 4)
+    }
+    return buf
   }
 }

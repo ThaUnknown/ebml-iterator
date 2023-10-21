@@ -1,5 +1,3 @@
-import { concat } from 'uint8-util'
-
 import EbmlDataTag from './EbmlDataTag.js'
 import BlockLacing from '../enums/BlockLacing.js'
 import Tools from '../../tools.js'
@@ -16,9 +14,9 @@ export default class Block extends EbmlDataTag {
   }
 
   writeValueBuffer () {
-    const value = new DataView(new ArrayBuffer(2))
-    value.setInt16(0, this.value)
-    return new Uint8Array(value.buffer)
+    const value = Buffer.alloc(2)
+    value.writeInt16BE(this.value, 0)
+    return value
   }
 
   writeFlagsBuffer () {
@@ -39,11 +37,11 @@ export default class Block extends EbmlDataTag {
         flags |= 0b0100
         break
     }
-    return new Uint8Array([flags % 256])
+    return Buffer.of(flags)
   }
 
   encodeContent () {
-    return concat([
+    return Buffer.concat([
       this.writeTrackBuffer(),
       this.writeValueBuffer(),
       this.writeFlagsBuffer(),
